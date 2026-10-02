@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in – HawkSearch Solutions</title>
+<link rel="icon" href="assets/hawksearchicon.png">
+<script src="portal.js"></script>
+<style>
+  /* Matches the existing HawkSearch sign-in (AWS Amplify Authenticator), so the switch to real SSO looks the same. */
+  :root {
+    --page: #f9fafb;
+    --card-border: #808080;
+    --field-border: #d7dee7;
+    --label: #6b7280;
+    --text: #0d1a26;
+    --placeholder: #888b93;
+    --primary: #f97316;
+    --primary-hover: #ea640b;
+    --link: #047d95;
+    --link-hover: #005566;
+    --error: #b91c1c;
+    --error-bg: #fbe8e8;
+    --font: "InterVariable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px 16px;
+    background: var(--page); font-family: var(--font); color: var(--text); font-size: 16px; line-height: 1.5;
+  }
+  [hidden] { display: none !important; }
+
+  .card {
+    width: min(478px, 100%);
+    padding: 32px 32px 40px;
+    background: #fff;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 2px 4px rgba(13, 26, 38, .15);
+  }
+  .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  label { color: var(--label); font-size: 16px; }
+  .input-group { display: flex; }
+  input {
+    flex: 1; min-width: 0; height: 42px; padding: 8px 16px;
+    border: 1px solid var(--field-border); border-radius: 4px;
+    background: #fff; color: var(--text); font: inherit; font-size: 16px; outline: 0;
+  }
+  input::placeholder { color: var(--placeholder); }
+  input:focus { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+  input[aria-invalid="true"] { border-color: var(--error); }
+  .input-group input { border-radius: 4px 0 0 4px; }
+  .show-pw {
+    width: 50px; display: grid; place-items: center;
+    border: 1px solid var(--field-border); border-left: 0; border-radius: 0 4px 4px 0;
+    background: #fff; color: var(--text); cursor: pointer;
+  }
+  .show-pw:hover { background: #f2f4f7; }
+  .show-pw:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+  .show-pw svg { width: 17px; height: 17px; }
+  .error-text { margin: 0; font-size: 14px; color: var(--error); }
+
+  .btn-primary {
+    width: 100%; height: 40px; margin-top: 1px;
+    border: 0; border-radius: 4px; background: var(--primary); color: #fff;
+    font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .btn-primary:disabled { opacity: .75; cursor: progress; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; border-radius: 999px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-link {
+    display: block; margin: 24px auto 0; padding: 4px 8px;
+    border: 0; background: none; color: var(--link);
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-link:hover { color: var(--link-hover); }
+
+  .alert { display: flex; gap: 10px; margin-bottom: 16px; padding: 12px 14px; border-radius: 4px; background: var(--error-bg); color: var(--error); font-size: 15px; }
+  .info { margin: 16px 0 0; padding: 12px 14px; border-radius: 4px; background: #e6f2f5; color: #00404d; font-size: 14px; }
+
+  /* Only in the prototype: tells testers the sign-in is simulated */
+  .proto-note { margin: 20px 0 0; max-width: 478px; text-align: center; font-size: 13px; color: var(--label); }
+  .proto-note a { color: var(--link); }
+</style>
+</head>
+<body>
+
+<main class="card">
+  <form id="form" novalidate>
+    <div class="alert" id="alert" role="alert" hidden></div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" placeholder="Enter your Email" required>
+      <p class="error-text" id="email-error" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="input-group">
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your Password" required>
+        <button class="show-pw" type="button" id="show-pw" aria-label="Show password" aria-controls="password">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <p class="error-text" id="password-error" hidden></p>
+    </div>
+
+    <button class="btn-primary" type="submit" id="submit">Sign in</button>
+    <button class="btn-link" type="button" id="forgot">Forgot your password?</button>
+    <p class="info" id="forgot-msg" role="status" hidden>Password resets will come from HawkSearch single sign-on. Until then, contact your account manager.</p>
+  </form>
+</main>
+
+<p class="proto-note">Prototype: sign-in is simulated, so any email and password will work. <a href="index.html">Back to home</a></p>
+
+<script>
+(function () {
+  var P = window.Portal;
+  // Only follow same-site page links, never another origin
+  var next = new URLSearchParams(location.search).get('next');
+  if (!next || !/^[\w-]+\.html([?#].*)?$/.test(next)) next = 'dashboard.html';
+  if (P.session.user()) { location.replace(next); return; }
+
+  var form = document.getElementById('form');
+  var email = document.getElementById('email');
+  var password = document.getElementById('password');
+  var submit = document.getElementById('submit');
+  var alertBox = document.getElementById('alert');
+
+  function setError(input, msg) {
+    var el = document.getElementById(input.id + '-error');
+    el.textContent = msg || '';
+    el.hidden = !msg;
+    input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    if (msg) input.setAttribute('aria-describedby', el.id); else input.removeAttribute('aria-describedby');
+  }
+  email.addEventListener('input', function () { setError(email, ''); alertBox.hidden = true; });
+  password.addEventListener('input', function () { setError(password, ''); alertBox.hidden = true; });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = true;
+    if (!email.value.trim()) { setError(email, 'Email is required'); ok = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { setError(email, 'Enter a valid email address'); ok = false; }
+    if (!password.value) { setError(password, 'Password is required'); ok = false; }
+    if (!ok) { form.querySelector('[aria-invalid="true"]').focus(); return; }
+
+    // Simulate the round trip to the identity provider
+    submit.disabled = true;
+    submit.innerHTML = '<span class="spinner" aria-hidden="true"></span>Signing in';
+    setTimeout(function () {
+      P.session.signIn(email.value, true);
+      location.href = next;
+    }, 700);
+  });
+
+  var toggle = document.getElementById('show-pw');
+  toggle.addEventListener('click', function () {
+    var show = password.type === 'password';
+    password.type = show ? 'text' : 'password';
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+  document.getElementById('forgot').addEventListener('click', function () { document.getElementById('forgot-msg').hidden = false; });
+})();
+</script>
+</body>
+</html>
