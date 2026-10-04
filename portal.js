@@ -161,25 +161,31 @@
       '</span></a>';
   }
 
-  // Signed-in home: one row per service, text and call to action on the left, screenshot on the right
+  // One row per service: text and call to action on the left, screenshot on the right.
+  // linkFor(service) gives the link (the public home page sends visitors through sign-in first).
+  function featureRows(linkFor) {
+    return '<div class="feature-rows">' + SERVICES.map(function (s) {
+      var href = esc(linkFor ? linkFor(s) : s.page);
+      return '<section class="feature-row" aria-labelledby="fr-' + s.id + '">' +
+        '<div class="feature-row__text">' +
+          '<p class="feature-row__eyebrow">' + icon(s.icon) + esc(s.name) + '</p>' +
+          '<h2 id="fr-' + s.id + '">' + esc(s.headline) + '</h2>' +
+          '<p>' + esc(s.blurb) + '</p>' +
+          '<a class="btn-cta" href="' + href + '">' + esc(s.cta) + '</a>' +
+        '</div>' +
+        '<a class="feature-row__shot" href="' + href + '" tabindex="-1" aria-hidden="true">' +
+          '<span class="screen__bar"><span></span><span></span><span></span></span>' +
+          '<img src="' + s.image + '" alt="" loading="lazy">' +
+        '</a>' +
+      '</section>';
+    }).join('') + '</div>';
+  }
+
   function homePage(user) {
     return '<main class="app-main">' +
       '<div class="page-head"><div><h1>Welcome back, ' + esc(user.firstName) + '</h1>' +
       '<p>Your HawkSearch Professional Services tools for ' + esc(user.company) + '.</p></div></div>' +
-      '<div class="feature-rows">' + SERVICES.map(function (s) {
-        return '<section class="feature-row" aria-labelledby="fr-' + s.id + '">' +
-          '<div class="feature-row__text">' +
-            '<p class="feature-row__eyebrow">' + icon(s.icon) + esc(s.name) + '</p>' +
-            '<h2 id="fr-' + s.id + '">' + esc(s.headline) + '</h2>' +
-            '<p>' + esc(s.blurb) + '</p>' +
-            '<a class="btn-cta" href="' + s.page + '">' + esc(s.cta) + '</a>' +
-          '</div>' +
-          '<a class="feature-row__shot" href="' + s.page + '" tabindex="-1" aria-hidden="true">' +
-            '<span class="screen__bar"><span></span><span></span><span></span></span>' +
-            '<img src="' + s.image + '" alt="" loading="lazy">' +
-          '</a>' +
-        '</section>';
-      }).join('') + '</div>' +
+      featureRows() +
       '<div class="help-strip">' + icon('users') + '<span><b>Need something else?</b> Professional Services builds custom tools and programs for HawkSearch customers.</span>' +
       '<a class="btn btn--outline btn--sm" href="https://www.hawksearch.com/contact-us">Contact us</a></div>' +
       '</main>';
@@ -236,6 +242,7 @@
     esc: esc,
     SERVICES: SERVICES,
     serviceCard: serviceCard,
+    featureRows: featureRows,
     renderApp: renderApp,
     renderChrome: renderChrome
   };

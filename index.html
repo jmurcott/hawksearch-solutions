@@ -61,7 +61,7 @@
         <h2>What you'll find <em>inside</em></h2>
         <p class="section__lead">Each tool is set up and supported by Professional Services for your HawkSearch account.</p>
       </div>
-      <div class="svc-grid" id="svc-grid"></div>
+      <div id="svc-rows"></div>
     </div>
   </section>
 
@@ -127,10 +127,10 @@
   var P = window.Portal;
   var user = P.session.user();
 
-  // Each service card opens that service, via sign-in when nobody is signed in
-  document.getElementById('svc-grid').innerHTML = P.SERVICES.map(function (s) {
-    return P.serviceCard(s, user ? {} : { href: 'login.html?next=' + encodeURIComponent(s.page), locked: true });
-  }).join('');
+  // Same rows as the signed-in home; each one opens its service, via sign-in when nobody is signed in
+  document.getElementById('svc-rows').innerHTML = P.featureRows(function (s) {
+    return user ? s.page : 'login.html?next=' + encodeURIComponent(s.page);
+  });
   document.getElementById('svc-count').textContent = P.SERVICES.length;
 
   // Already signed in? Point the nav at the dashboard instead of the sign-in page.
