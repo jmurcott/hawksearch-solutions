@@ -178,7 +178,13 @@
       '</main>';
   }
 
-  // Renders the signed-in page named by <body data-page="home|insights|automations|scraping|recommendations">
+  function wireSignOut() {
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-signout]')) session.signOut();
+    });
+  }
+
+  // Renders the signed-in page named by <body data-page="home|automations|scraping|recommendations">
   function renderApp() {
     var user = session.require();
     if (!user) return;
@@ -186,9 +192,16 @@
     var s = SERVICES.filter(function (x) { return x.id === id; })[0];
     if (s) document.title = s.name + ' – HawkSearch Solutions';
     document.getElementById('app').innerHTML = header(s ? s.id : '', user) + (s ? servicePage(s) : homePage(user)) + footer();
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('[data-signout]')) session.signOut();
-    });
+    wireSignOut();
+  }
+
+  // For a service page that brings its own content (the working Assistant Insights tool): just the portal header and footer
+  function renderChrome(activeId) {
+    var user = session.require();
+    if (!user) return;
+    document.getElementById('app-header').outerHTML = header(activeId, user);
+    document.getElementById('app-footer').outerHTML = footer();
+    wireSignOut();
   }
 
   window.Portal = {
@@ -197,6 +210,7 @@
     esc: esc,
     SERVICES: SERVICES,
     serviceCard: serviceCard,
-    renderApp: renderApp
+    renderApp: renderApp,
+    renderChrome: renderChrome
   };
 })();

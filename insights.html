@@ -9,11 +9,145 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="insights/insights.css">
 <script src="portal.js"></script>
 <script>Portal.session.require();</script>
 </head>
 <body class="app-body" data-page="insights">
-<div id="app"></div>
-<script>Portal.renderApp();</script>
+<div id="app-header"></div>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20zM12 10v4M12 17.5v.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></symbol>
+  <symbol id="i-redirect" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
+  <symbol id="i-question" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18v.01"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top__row">
+      <div><h1 class="ins-title">Assistant Insights</h1><span class="ins-note"><span id="sample-note">Showing made-up sample data. Add your own CSV exports to replace it. </span>Files you add are read in your browser and never uploaded.</span></div>
+      <div class="top__files">
+        <div id="file-chips" style="display:contents"></div>
+        <label class="btn btn--primary btn--sm">
+          <svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Add CSV files
+          <input type="file" id="file-input" accept=".csv,text/csv" multiple hidden>
+        </label>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-insights" aria-controls="view-insights" aria-selected="true" type="button">Insights</button>
+      <button class="tab" role="tab" id="tab-logs" aria-controls="view-logs" aria-selected="false" type="button">Logs <span class="tab__count" id="logs-count">0</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="range" id="range"></p>
+
+  <div class="empty-state" id="empty" hidden>
+    <h2>Add an assistant log to get started</h2>
+    <p>Drop one or more CSV exports here, or use <b>Add CSV files</b>. Each file needs the columns Exchange ID, Timestamp, Exact Prompt and Exact Response.</p>
+  </div>
+
+  <!-- ===== Insights ===== -->
+  <section id="view-insights" role="tabpanel" aria-labelledby="tab-insights">
+    <div class="stats" id="stats"></div>
+
+    <div class="card card--full">
+      <h2>What we noticed</h2>
+      <p class="card__sub">Highlights worked out from this log. Click a link to see the conversations behind it.</p>
+      <ul class="notice-list" id="notices"></ul>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>What shoppers asked about</h2>
+        <p class="card__sub">Prompts grouped by topic. Click a bar to read them.</p>
+        <ul class="bars" id="intent-bars"></ul>
+      </div>
+      <div class="card">
+        <h2>How the assistant responded</h2>
+        <p class="card__sub">What happened after each prompt. Click a bar to read them.</p>
+        <ul class="bars" id="outcome-bars"></ul>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Top product search terms</h2>
+        <p class="card__sub">Most common words in product searches. Click a term to search the logs.</p>
+        <div class="term-list" id="terms"></div>
+      </div>
+      <div class="card">
+        <h2>Searches with no response</h2>
+        <p class="card__sub">Shoppers asked, but the assistant said nothing back. Worth checking the catalogue for these.</p>
+        <div class="term-list" id="unanswered-terms"></div>
+        <ul class="unanswered" id="unanswered"></ul>
+      </div>
+    </div>
+
+    <div class="card card--full">
+      <h2>Activity by hour</h2>
+      <p class="card__sub" id="hour-sub">Exchanges per hour of the day.</p>
+      <div class="chart-pad">
+        <div class="cols" id="hours" role="img"></div>
+        <div class="cols-axis" id="hours-axis" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>About this data</h2>
+      <p class="card__sub">Checks applied to the export before the numbers above were worked out.</p>
+      <ul class="dq" id="dq"></ul>
+    </div>
+  </section>
+
+  <!-- ===== Logs ===== -->
+  <section id="view-logs" role="tabpanel" aria-labelledby="tab-logs" hidden>
+    <div class="filters">
+      <label class="search">
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <span class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search prompts and responses</span>
+        <input type="search" id="q" placeholder="Search prompts and responses" autocomplete="off">
+      </label>
+      <select class="select" id="f-intent" aria-label="Topic"><option value="">All topics</option></select>
+      <select class="select" id="f-outcome" aria-label="Assistant response"><option value="">All responses</option></select>
+      <select class="select" id="f-sort" aria-label="Sort order"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
+      <label class="check"><input type="checkbox" id="f-followups"> Hide follow-up messages</label>
+    </div>
+    <div class="results-bar">
+      <span id="results-count"></span>
+      <span style="display:flex;gap:8px">
+        <button class="btn btn--outline btn--sm" type="button" id="clear-filters" hidden>Clear filters</button>
+        <button class="btn btn--outline btn--sm" type="button" id="export"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download results</button>
+      </span>
+    </div>
+    <ul class="logs" id="logs"></ul>
+    <div class="more"><button class="btn btn--outline" type="button" id="more" hidden>Show more</button></div>
+  </section>
+</main>
+
+<div class="drop" id="drop" hidden><div>Drop CSV files to add them</div></div>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+
+<div id="app-footer"></div>
+
+<script>window.INSIGHTS_DEFAULT_FILES = ['insights/samples/outdoor-demo-2026-10-03.csv']; window.INSIGHTS_DEFAULTS_ARE_SAMPLE = true;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="insights/analyze.js"></script>
+<script src="insights/app.js"></script>
+<script>Portal.renderChrome('insights');</script>
 </body>
 </html>
