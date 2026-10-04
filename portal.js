@@ -1,8 +1,8 @@
 /*
   HawkSearch Solutions portal: shared script for every page.
   - Portal.session: a FAKE sign-in kept in browser storage, until SSO from the core platform replaces it.
-  - Icon sprite, injected once so pages can use <svg class="i"><use href="#i-name"/></svg>.
-  - Portal.SOLUTIONS: the catalogue of Professional Services solutions (placeholder content).
+  - Portal.SERVICES: the four Professional Services tools, defined once and used by every page.
+  - Portal.renderApp(): the signed-in layout (top navigation + page) for dashboard.html and each service page.
 */
 (function () {
   var KEY = 'hsPortalUser';
@@ -36,14 +36,14 @@
       var user = userFromEmail(email.trim().toLowerCase());
       try {
         (remember ? localStorage : sessionStorage).setItem(KEY, JSON.stringify(user));
-      } catch (e) { /* storage blocked: the dashboard will send them back to sign in */ }
+      } catch (e) { /* storage blocked: signed-in pages will send them back to sign in */ }
       return user;
     },
     signOut: function () {
       try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); } catch (e) {}
       location.href = 'index.html';
     },
-    // Pages that need a signed-in user call this first
+    // Signed-in pages call this first
     require: function () {
       var u = read();
       if (!u) location.replace('login.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search));
@@ -56,33 +56,18 @@
     arrow: '<path d="M7 17 17 7M8 7h9v9"/>',
     right: '<path d="M5 12h14M13 6l6 6-6 6"/>',
     lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
-    plug: '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>',
-    puzzle: '<path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3h7z"/>',
-    rocket: '<path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M14 4c3-1 6-1 6-1s0 3-1 6c-1 3-4 6-8 8l-4-4c2-4 5-7 7-9z"/><circle cx="15" cy="9" r="1.5"/>',
-    code: '<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/>',
-    sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    scrape: '<path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6M8 13h8M8 17h5"/>',
     chart: '<path d="M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3"/>',
-    wrench: '<path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-4-4 1.7-1.7a4 4 0 0 0-5-5L3 7l4-4z"/>',
-    book: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7"/>',
-    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
-    home: '<path d="M3 11l9-7 9 7M5 10v10h14V10"/>',
-    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
-    layers: '<path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/>',
-    inbox: '<path d="M3 13h5l1.5 3h5L16 13h5M5 5h14l2 8v6H3v-6z"/>',
-    help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.5V14M12 17.5v.01"/>',
-    logout: '<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>',
     check: '<path d="m5 12 5 5 9-10"/>',
-    download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
-    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
-    shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    layers: '<path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/>',
     users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
-    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
     refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
-    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>',
-    sso: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>'
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'
   };
   var sprite = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none">' +
     Object.keys(P).map(function (k) {
@@ -99,56 +84,119 @@
     });
   }
 
-  // ---- Solutions catalogue (placeholder content until the real catalogue exists) ----
-  var CATEGORIES = {
-    connector: { label: 'Connector', icon: 'plug' },
-    integration: { label: 'Integration', icon: 'puzzle' },
-    accelerator: { label: 'Accelerator', icon: 'rocket' },
-    ai: { label: 'AI', icon: 'sparkle' },
-    analytics: { label: 'Analytics', icon: 'chart' },
-    tool: { label: 'Tool', icon: 'wrench' }
-  };
-  var SOLUTIONS = [
-    { id: 'sitecore-ext', name: 'Sitecore Connector Extensions', cat: 'connector', tags: ['Sitecore', 'XM Cloud'], version: '3.2.0', updated: '2026-09-18',
-      desc: 'Adds multi-site indexing, personalised boosts and preview support to the standard Sitecore connector.' },
-    { id: 'opti-feed', name: 'Optimizely Commerce Index Feed', cat: 'integration', tags: ['Optimizely', 'Commerce'], version: '2.4.1', updated: '2026-09-02',
-      desc: 'Incremental product and catalogue feed with price lists, inventory and variant roll-up.' },
-    { id: 'react-starter', name: 'Headless React Search Starter', cat: 'accelerator', tags: ['React', 'Next.js'], version: '1.8.0', updated: '2026-09-25',
-      desc: 'Production-ready search page, autocomplete and facets built on the HawkSearch React SDK.' },
-    { id: 'smart-response-kit', name: 'Smart Response Widget Kit', cat: 'ai', tags: ['Smart Response', 'JavaScript'], version: '1.3.0', updated: '2026-09-28',
-      desc: 'Drop-in AI answer card for results pages, with sources, follow-up questions and tracking.' },
-    { id: 'b2b-pricing', name: 'B2B Customer-Specific Pricing', cat: 'integration', tags: ['B2B', 'ERP'], version: '2.0.3', updated: '2026-08-14',
-      desc: 'Shows contract pricing and availability in results without re-indexing for every account.' },
-    { id: 'bi-dashboards', name: 'Search Analytics for Power BI', cat: 'analytics', tags: ['Power BI', 'Reporting'], version: '1.1.0', updated: '2026-07-30',
-      desc: 'Ready-made reports for zero-result searches, conversion by keyword and merchandising impact.' },
-    { id: 'enrichment', name: 'AI Product Data Enrichment', cat: 'ai', tags: ['Catalog', 'Attributes'], version: '0.9.2', updated: '2026-09-10',
-      desc: 'Fills missing attributes and writes search-friendly descriptions before products are indexed.' },
-    { id: 'synonym-manager', name: 'Synonym & Redirect Bulk Manager', cat: 'tool', tags: ['Merchandising', 'CSV'], version: '1.5.0', updated: '2026-06-22',
-      desc: 'Import, review and publish synonyms and keyword redirects in bulk from a spreadsheet.' },
-    { id: 'bigcommerce-pack', name: 'BigCommerce Faceted Navigation Pack', cat: 'accelerator', tags: ['BigCommerce', 'Stencil'], version: '2.2.0', updated: '2026-08-05',
-      desc: 'Category landing pages with HawkSearch facets, swatches and SEO-friendly URLs.' }
+  // ---- The four services. Screens are screenshots for now; the working tools get connected later. ----
+  var SERVICES = [
+    {
+      id: 'insights', page: 'insights.html', nav: 'Assistant Insights', name: 'Assistant Insights', icon: 'chat',
+      image: 'assets/screens/insights.png', alt: 'Assistant Insights dashboard showing shopper prompts, topics and searches with no response',
+      tagline: 'See what shoppers ask your AI Search Assistant.',
+      desc: 'Browse and search every Search Assistant conversation, and get an analysis of what shoppers ask about: top product searches, searches that got no response, and customer-service questions the assistant can only redirect.',
+      points: ['Search every prompt and response', 'Spot catalogue gaps from unanswered searches', 'Topic and response breakdowns']
+    },
+    {
+      id: 'automations', page: 'automations.html', nav: 'Automations', name: 'Automations', icon: 'bolt',
+      image: 'assets/screens/automations.png', alt: 'Automations list with client, automation type, status and dates',
+      tagline: 'Run AI-powered jobs against your HawkSearch engine.',
+      desc: 'Set up automations such as analyzing keywords, suggesting synonyms and scraping PDFs, and see the status and history of each one.',
+      points: ['Analyze keywords', 'Suggest synonyms', 'Scrape PDF content']
+    },
+    {
+      id: 'scraping', page: 'scraping.html', nav: 'Scraping', name: 'Scraping', icon: 'scrape',
+      image: 'assets/screens/scraping.png', alt: 'Scraping jobs list with in progress and completed tabs',
+      tagline: 'Pull content from websites and documents into HawkSearch.',
+      desc: 'Create scraping jobs that collect content from your sites and documents for indexing, and follow each job from in progress to completed.',
+      points: ['Create named scraping jobs', 'Track jobs in progress', 'Review completed jobs']
+    },
+    {
+      id: 'recommendations', page: 'recommendations.html', nav: 'Recommendations', name: 'Recommendations Revenue', icon: 'chart',
+      image: 'assets/screens/recommendations.png', alt: 'Recommendations Revenue report with program timeline, attributed revenue and goal pace',
+      tagline: 'Grow revenue from HawkSearch Recommendations with a 12-month program.',
+      desc: 'Follow your Recommendations Revenue Optimization program: revenue, orders and click-through credited to recommendation widgets, incremental revenue since kickoff, and pace toward the program goal.',
+      points: ['Attributed revenue, orders and CTR', 'Incremental revenue since kickoff', 'Pace against the 12-month goal']
+    }
   ];
 
-  function solutionCard(s, opts) {
+  function logo(href) {
+    return '<a class="brand" href="' + href + '" aria-label="HawkSearch Solutions home">' +
+      '<span class="brand__logo"><img src="assets/hawksearchicon.png" alt=""><span class="brand__word">hawk<b>search</b></span></span>' +
+      '<span class="brand__tag">Solutions</span></a>';
+  }
+
+  // ---- Signed-in layout ----
+  function header(active, user) {
+    return '<header class="app-top"><div class="app-top__row">' + logo('dashboard.html') +
+      '<nav class="app-nav" aria-label="Services"><ul>' + SERVICES.map(function (s) {
+        return '<li><a href="' + s.page + '"' + (s.id === active ? ' aria-current="page"' : '') + '>' + esc(s.nav) + '</a></li>';
+      }).join('') + '</ul></nav>' +
+      '<div class="app-user"><span class="avatar" aria-hidden="true">' + esc(user.initials) + '</span>' +
+      '<span class="app-user__name">' + esc(user.name) + '<small>' + esc(user.company) + '</small></span>' +
+      '<button class="app-signout" type="button" data-signout>Sign out</button></div>' +
+      '</div></header>';
+  }
+  function footer() {
+    return '<footer class="app-foot">© 2026 Bridgeline Digital Inc. All rights reserved.</footer>';
+  }
+
+  function serviceCard(s, opts) {
     opts = opts || {};
-    var c = CATEGORIES[s.cat];
-    var tag = opts.href ? 'a' : 'div';
-    return '<' + tag + ' class="sol' + (opts.mini ? ' sol--mini' : '') + '"' + (opts.href ? ' href="' + esc(opts.href) + '"' : '') + ' data-cat="' + s.cat + '">' +
-      '<div class="sol__top"><span class="sol__icon">' + icon(c.icon) + '</span><span class="sol__cat">' + c.label + '</span></div>' +
-      '<h3 class="sol__name">' + esc(s.name) + '</h3>' +
-      (opts.mini ? '' :
-        '<p class="sol__desc">' + esc(s.desc) + '</p>' +
-        '<div class="sol__foot">' + s.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
-        (opts.locked ? '<span class="sol__lock">' + icon('lock') + 'Sign in</span>' : '') + '</div>') +
-      '</' + tag + '>';
+    return '<a class="svc" href="' + esc(opts.href || s.page) + '">' +
+      '<span class="svc__shot"><img src="' + s.image + '" alt="" loading="lazy"></span>' +
+      '<span class="svc__body">' +
+        '<span class="svc__head"><span class="svc__icon">' + icon(s.icon) + '</span><span class="svc__name">' + esc(s.name) + '</span></span>' +
+        '<span class="svc__tagline">' + esc(s.tagline) + '</span>' +
+        '<span class="svc__points">' + s.points.map(function (p) { return '<span>' + icon('check') + esc(p) + '</span>'; }).join('') + '</span>' +
+        '<span class="svc__open">' + (opts.locked ? icon('lock') + 'Sign in to open' : 'Open ' + esc(s.nav) + icon('right')) + '</span>' +
+      '</span></a>';
+  }
+
+  function homePage(user) {
+    return '<main class="app-main">' +
+      '<div class="page-head"><div><h1>Welcome back, ' + esc(user.firstName) + '</h1>' +
+      '<p>Your HawkSearch Professional Services tools for ' + esc(user.company) + '.</p></div></div>' +
+      '<div class="svc-grid">' + SERVICES.map(function (s) { return serviceCard(s); }).join('') + '</div>' +
+      '<div class="help-strip">' + icon('users') + '<span><b>Need something else?</b> Professional Services builds custom tools and programs for HawkSearch customers.</span>' +
+      '<a class="btn btn--outline btn--sm" href="https://www.hawksearch.com/contact-us">Contact us</a></div>' +
+      '</main>';
+  }
+
+  function servicePage(s) {
+    return '<main class="app-main">' +
+      '<div class="page-head"><div>' +
+        '<h1><span class="svc__icon svc__icon--lg">' + icon(s.icon) + '</span>' + esc(s.name) + '<span class="preview-badge">Preview</span></h1>' +
+        '<p>' + esc(s.desc) + '</p>' +
+        '<div class="point-row">' + s.points.map(function (p) { return '<span>' + icon('check') + esc(p) + '</span>'; }).join('') + '</div>' +
+      '</div></div>' +
+      '<figure class="screen">' +
+        '<div class="screen__bar" aria-hidden="true"><span></span><span></span><span></span></div>' +
+        '<img src="' + s.image + '" alt="' + esc(s.alt) + '">' +
+        '<figcaption>' + icon('image') + 'Screenshot of the current tool. The working version will appear here.</figcaption>' +
+      '</figure>' +
+      '<nav class="other-svcs" aria-label="Other services"><p>Other services</p><div>' +
+        SERVICES.filter(function (o) { return o.id !== s.id; }).map(function (o) {
+          return '<a href="' + o.page + '"><span class="svc__icon">' + icon(o.icon) + '</span>' + esc(o.name) + icon('right') + '</a>';
+        }).join('') + '</div></nav>' +
+      '</main>';
+  }
+
+  // Renders the signed-in page named by <body data-page="home|insights|automations|scraping|recommendations">
+  function renderApp() {
+    var user = session.require();
+    if (!user) return;
+    var id = document.body.getAttribute('data-page');
+    var s = SERVICES.filter(function (x) { return x.id === id; })[0];
+    if (s) document.title = s.name + ' – HawkSearch Solutions';
+    document.getElementById('app').innerHTML = header(s ? s.id : '', user) + (s ? servicePage(s) : homePage(user)) + footer();
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-signout]')) session.signOut();
+    });
   }
 
   window.Portal = {
     session: session,
     icon: icon,
     esc: esc,
-    CATEGORIES: CATEGORIES,
-    SOLUTIONS: SOLUTIONS,
-    solutionCard: solutionCard
+    SERVICES: SERVICES,
+    serviceCard: serviceCard,
+    renderApp: renderApp
   };
 })();
