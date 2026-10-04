@@ -91,28 +91,40 @@
       image: 'assets/screens/insights.png', alt: 'Assistant Insights dashboard showing shopper prompts, topics and searches with no response',
       tagline: 'See what shoppers ask your AI Search Assistant.',
       desc: 'Browse and search every Search Assistant conversation, and get an analysis of what shoppers ask about: top product searches, searches that got no response, and customer-service questions the assistant can only redirect.',
-      points: ['Search every prompt and response', 'Spot catalogue gaps from unanswered searches', 'Topic and response breakdowns']
+      points: ['Search every prompt and response', 'Spot catalogue gaps from unanswered searches', 'Topic and response breakdowns'],
+      headline: 'Know Exactly What Shoppers Ask Your AI Assistant',
+      blurb: 'Every question a shopper types into your Search Assistant tells you something. Assistant Insights collects those conversations in one place so you can read and search them, and turns them into clear findings: the products people look for most, the searches that got no answer, and how often shoppers need customer service instead. Use it to close catalogue gaps and tune your merchandising around real demand.',
+      cta: 'Open Assistant Insights'
     },
     {
       id: 'automations', page: 'automations.html', nav: 'Automations', name: 'Automations', icon: 'bolt',
       image: 'assets/screens/automations.png', alt: 'Automations list with client, automation type, status and dates',
       tagline: 'Run AI-powered jobs against your HawkSearch engine.',
       desc: 'Set up automations such as analyzing keywords, suggesting synonyms and scraping PDFs, and see the status and history of each one.',
-      points: ['Analyze keywords', 'Suggest synonyms', 'Scrape PDF content']
+      points: ['Analyze keywords', 'Suggest synonyms', 'Scrape PDF content'],
+      headline: 'Put Routine Search Tuning on Autopilot',
+      blurb: 'Keeping search sharp takes steady, repetitive work. Automations lets Professional Services set up AI-powered jobs for your HawkSearch engine, like analyzing keywords, suggesting synonyms and pulling content out of PDFs, and run them whenever you need. See the status and history of every automation at a glance, so nothing slips through the cracks.',
+      cta: 'Open Automations'
     },
     {
       id: 'scraping', page: 'scraping.html', nav: 'Scraping', name: 'Scraping', icon: 'scrape',
       image: 'assets/screens/scraping.png', alt: 'Scraping jobs list with in progress and completed tabs',
       tagline: 'Pull content from websites and documents into HawkSearch.',
       desc: 'Create scraping jobs that collect content from your sites and documents for indexing, and follow each job from in progress to completed.',
-      points: ['Create named scraping jobs', 'Track jobs in progress', 'Review completed jobs']
+      points: ['Create named scraping jobs', 'Track jobs in progress', 'Review completed jobs'],
+      headline: 'Turn Websites and Documents into Searchable Content',
+      blurb: 'Great answers depend on great content, and a lot of it lives outside your product catalogue. The Scraping tool collects content from your websites and documents and prepares it for your HawkSearch index. Create a job, give it a name, and follow it from in progress to completed, all without writing a line of code.',
+      cta: 'Open Scraping'
     },
     {
       id: 'recommendations', page: 'recommendations.html', nav: 'Recommendations', name: 'Recommendations Revenue', icon: 'chart',
       image: 'assets/screens/recommendations.png', alt: 'Recommendations Revenue report with program timeline, attributed revenue and goal pace',
       tagline: 'Grow revenue from HawkSearch Recommendations with a 12-month program.',
       desc: 'Follow your Recommendations Revenue Optimization program: revenue, orders and click-through credited to recommendation widgets, incremental revenue since kickoff, and pace toward the program goal.',
-      points: ['Attributed revenue, orders and CTR', 'Incremental revenue since kickoff', 'Pace against the 12-month goal']
+      points: ['Attributed revenue, orders and CTR', 'Incremental revenue since kickoff', 'Pace against the 12-month goal'],
+      headline: 'Grow Revenue from Every Recommendation',
+      blurb: 'Recommendations should earn their place on the page. In this 12-month program, Professional Services works with your team to raise the revenue your recommendation widgets drive, and this report keeps score: revenue, orders and click-through credited to recommendations, the extra revenue since kickoff, and how you’re pacing against the program goal.',
+      cta: 'View the Recommendations Report'
     }
   ];
 
@@ -149,11 +161,25 @@
       '</span></a>';
   }
 
+  // Signed-in home: one row per service, text and call to action on the left, screenshot on the right
   function homePage(user) {
     return '<main class="app-main">' +
       '<div class="page-head"><div><h1>Welcome back, ' + esc(user.firstName) + '</h1>' +
       '<p>Your HawkSearch Professional Services tools for ' + esc(user.company) + '.</p></div></div>' +
-      '<div class="svc-grid">' + SERVICES.map(function (s) { return serviceCard(s); }).join('') + '</div>' +
+      '<div class="feature-rows">' + SERVICES.map(function (s) {
+        return '<section class="feature-row" aria-labelledby="fr-' + s.id + '">' +
+          '<div class="feature-row__text">' +
+            '<p class="feature-row__eyebrow">' + icon(s.icon) + esc(s.name) + '</p>' +
+            '<h2 id="fr-' + s.id + '">' + esc(s.headline) + '</h2>' +
+            '<p>' + esc(s.blurb) + '</p>' +
+            '<a class="btn-cta" href="' + s.page + '">' + esc(s.cta) + '</a>' +
+          '</div>' +
+          '<a class="feature-row__shot" href="' + s.page + '" tabindex="-1" aria-hidden="true">' +
+            '<span class="screen__bar"><span></span><span></span><span></span></span>' +
+            '<img src="' + s.image + '" alt="" loading="lazy">' +
+          '</a>' +
+        '</section>';
+      }).join('') + '</div>' +
       '<div class="help-strip">' + icon('users') + '<span><b>Need something else?</b> Professional Services builds custom tools and programs for HawkSearch customers.</span>' +
       '<a class="btn btn--outline btn--sm" href="https://www.hawksearch.com/contact-us">Contact us</a></div>' +
       '</main>';
